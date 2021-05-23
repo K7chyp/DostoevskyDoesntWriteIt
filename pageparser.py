@@ -30,6 +30,7 @@ class PageHrefsParser(PageBaseClass):
             for part_of_page in self.soup.find_all(
                 "div", {"class": "views-field views-field-title"}
             )
+            if "pisma" not in str(part_of_page.find("a").get("href"))
         }
         self.last_page: int = max(
             int(value)
@@ -76,20 +77,26 @@ class GetBookText(PageBaseClass):
         self.book_content: dict = {self.url: self.book_text}
 
     def get_last_page_number(self):
-        self.last_page_number: int = int(
-            [
-                findall(r"\d+", str(value))
-                for value in self.soup.find_all("div", {"class": "pager"})
-            ][0][LAST_ELEMENT]
-        )
+        elements = [
+            findall(r"\d+", str(value))
+            for value in self.soup.find_all("div", {"class": "pager"})
+        ]
+        if not elements:
+            self.last_page_number = -1
+
+        else:
+            self.last_page_number: int = max(int(element) for element in elements[0])
 
     def get_all_book_text(self):
         self.get_last_page_number()
         self.book_text: str = ""
-        for page_number in trange(1, self.last_page_number):
-            self.book_text += TextFromPageParser(
-                self.url + "?page={}".format(page_number)
-            ).text
+        if self.last_page_number != -1:
+            for page_number in trange(1, self.last_page_number):
+                self.book_text += TextFromPageParser(
+                    self.url + "?page={}".format(page_number)
+                ).text
+        else:
+            self.book_text = None
 
 
 class GetAllBooksByAuthor:
@@ -100,7 +107,7 @@ class GetAllBooksByAuthor:
     def merge_book_name_and_text(self):
         self.books_output: dict = {}
         for href, book_name in self.books_hrefs.items():
-            self.books_output[book_name] = GetBookText(href).book_text
-
-
-print(GetAllBooksByAuthor("fedor-dostoevskiy").books_hrefs)
+            try:
+                self.books_output[book_name] = GetBookText(href).book_text
+            except:
+                print(href)
