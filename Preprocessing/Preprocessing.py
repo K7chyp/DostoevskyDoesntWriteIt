@@ -15,7 +15,7 @@ RUSSIAN_STOPWORDS = {
 BATCH_SIZE = 1000
 
 
-class TextPreprocessing:
+class Preprocessing:
     def __init__(self, df):
         self.df = df.copy()
         self.string_preprocessing()
@@ -38,15 +38,18 @@ class TextPreprocessing:
     def lemmatize(self, text):
         m = Mystem()
         merged_text = "|".join(text)
+
         doc = []
-        result = []
-        for text in m.lemmatize(merged_text):
-            if text != "|":
-                doc.append(text)
+        res = []
+
+        for t in m.lemmatize(merged_text):
+            if t != "|":
+                doc.append(t)
             else:
-                result.append(doc)
+                res.append(doc)
                 doc = []
-        return result
+
+        return res
 
     def text_lemmatizing(self):
         self.df.text = self.df.text.apply(
@@ -57,6 +60,11 @@ class TextPreprocessing:
         self.df.text = self.df.text.apply(
             lambda text_batch: Parallel(n_jobs=-1)(
                 delayed(self.lemmatize)(part_of_batch)
-                for part_of_batch in text_batch
+                for part_of_batch in tqdm(text_batch)
             )
+        )
+        self.df.text = self.df.text.apply(
+            lambda text: [
+                item[0] for sublist in [item for item in text] for item in sublist
+            ]
         )
