@@ -90,3 +90,16 @@ class GetBookText(PageBaseClass):
             self.book_text += TextFromPageParser(
                 self.url + "?page={}".format(page_number)
             ).text
+
+
+class GetAllBooksByAuthor:
+    def __init__(self, author_name):
+        self.books_hrefs = AuthorHrefParser(author_name).output
+
+    def merege_book_name_and_text(self):
+        books_output: dict = {}
+        for href, book_name in self.books_hrefs.items():
+            books_output[book_name] = GetBookText(href).book_text
+
+
+print(GetAllBooksByAuthor("fedor-dostoevskiy").books_hrefs)
