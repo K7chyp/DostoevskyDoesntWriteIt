@@ -1,13 +1,15 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+from re import findall
 
 UTF_8: str = "utf8"
 MAIN_URL: str = "https://knijky.ru"
 
 
-class AuthorPageParser:
-    def __init__(self):
-        self.request_ = urlopen(MAIN_URL + "/authors/fedor-dostoevskiy/")
+class BooksHrefsParser:
+    def __init__(self, url):
+        self.url = url
+        self.request_ = urlopen(self.url)
         self.html: str = self.request_.read().decode(UTF_8)
         self.soup = BeautifulSoup(self.html, "lxml")
         self.author_page_content_parser()
@@ -22,6 +24,18 @@ class AuthorPageParser:
                 "div", {"class": "views-field views-field-title"}
             )
         }
+        self.last_page: int = max(
+            int(value)
+            for value in [
+                findall(r"\d+", str(item))
+                for item in self.soup.find_all("div", {"class": "item-list"})
+            ][0]
+        )
 
 
-print(AuthorPageParser().information)
+class ContentParser:
+    def __init__(self, author_name):
+        self.author_name = author_name
+
+
+print(BooksHrefsParser(MAIN_URL + "/authors/fedor-dostoevskiy/").last_page)
