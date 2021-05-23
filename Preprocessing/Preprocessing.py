@@ -32,7 +32,7 @@ class TextPreprocessing:
         self.df.text = self.df.text.apply(
             lambda string: " ".join(
                 word for word in string if word not in RUSSIAN_STOPWORDS
-            )
+            ).split()
         )
 
     def lemmatize(self, text):
@@ -57,6 +57,6 @@ class TextPreprocessing:
         self.df.text = self.df.text.apply(
             lambda text_batch: Parallel(n_jobs=-1)(
                 delayed(self.lemmatize)(part_of_batch)
-                for part_of_batch in tqdm(text_batch)
+                for part_of_batch in text_batch
             )
         )
