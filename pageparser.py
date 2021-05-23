@@ -95,11 +95,12 @@ class GetBookText(PageBaseClass):
 class GetAllBooksByAuthor:
     def __init__(self, author_name):
         self.books_hrefs = AuthorHrefParser(author_name).output
+        self.merge_book_name_and_text()
 
-    def merege_book_name_and_text(self):
-        books_output: dict = {}
+    def merge_book_name_and_text(self):
+        self.books_output: dict = {}
         for href, book_name in self.books_hrefs.items():
-            books_output[book_name] = GetBookText(href).book_text
+            self.books_output[book_name] = GetBookText(href).book_text
 
 
 print(GetAllBooksByAuthor("fedor-dostoevskiy").books_hrefs)
