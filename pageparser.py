@@ -6,12 +6,17 @@ UTF_8: str = "utf8"
 MAIN_URL: str = "https://knijky.ru"
 
 
-class PageHrefsParser:
+class PageBaseClass:
     def __init__(self, url):
         self.url = url
         self.request_ = urlopen(self.url)
         self.html: str = self.request_.read().decode(UTF_8)
         self.soup = BeautifulSoup(self.html, "lxml")
+
+
+class PageHrefsParser(PageBaseClass):
+    def __init__(self, url):
+        super().__init__(url)
         self.author_page_content_parser()
 
     def find_information_from_field_content(self, information_from_page) -> str:
@@ -50,4 +55,16 @@ class AuthorHrefParser:
             self.output = {**information_from_current_page, **self.output}
 
 
-print(AuthorHrefParser("fedor-dostoevskiy").output)
+class TextFromPageParser(PageBaseClass):
+    def __init__(self, url):
+        super().__init__(url)
+        self.get_text_from_page()
+
+    def get_text_from_page(self):
+        self.text = " ".join(
+            part_of_page.text.replace("\xa0", "")
+            for part_of_page in self.soup.find_all("p")
+        )
+
+
+print(TextFromPageParser("https://knijky.ru/books/idiot").text)
