@@ -35,7 +35,19 @@ class BooksHrefsParser:
 
 class ContentParser:
     def __init__(self, author_name):
-        self.author_name = author_name
+        self.author_name: str = author_name
+        self.author_page_name: str = MAIN_URL + "/authors/{}/".format(self.author_name)
+        self.get_all_books_hrefs_for_parsing()
+
+    def get_all_books_hrefs_for_parsing(self) -> None:
+        last_page: int = BooksHrefsParser(self.author_page_name).last_page
+        self.output: dict = {}
+        for page_number in range(last_page):
+            current_href = self.author_page_name + "?page={}".format(page_number)
+            information_from_current_page: dict = BooksHrefsParser(
+                current_href
+            ).information
+            self.output = {**information_from_current_page, **self.output}
 
 
-print(BooksHrefsParser(MAIN_URL + "/authors/fedor-dostoevskiy/").last_page)
+print(ContentParser("fedor-dostoevskiy").output)
