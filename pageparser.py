@@ -73,6 +73,7 @@ class GetBookText(PageBaseClass):
     def __init__(self, href):
         super().__init__(MAIN_URL + href)
         self.get_all_book_text()
+        self.book_content: dict = {self.url: self.book_text}
 
     def get_last_page_number(self):
         self.last_page_number: int = int(
@@ -89,6 +90,3 @@ class GetBookText(PageBaseClass):
             self.book_text += TextFromPageParser(
                 self.url + "?page={}".format(page_number)
             ).text
-
-
-print(GetBookText("/books/idiot").book_text)
