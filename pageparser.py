@@ -1,9 +1,11 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from re import findall
+from tqdm import trange
 
 UTF_8: str = "utf8"
 MAIN_URL: str = "https://knijky.ru"
+LAST_ELEMENT = -1
 
 
 class PageBaseClass:
@@ -67,4 +69,26 @@ class TextFromPageParser(PageBaseClass):
         )
 
 
-print(TextFromPageParser("https://knijky.ru/books/idiot").text)
+class GetBookText(PageBaseClass):
+    def __init__(self, href):
+        super().__init__(MAIN_URL + href)
+        self.get_all_book_text()
+
+    def get_last_page_number(self):
+        self.last_page_number: int = int(
+            [
+                findall(r"\d+", str(value))
+                for value in self.soup.find_all("div", {"class": "pager"})
+            ][0][LAST_ELEMENT]
+        )
+
+    def get_all_book_text(self):
+        self.get_last_page_number()
+        self.book_text: str = ""
+        for page_number in trange(1, self.last_page_number):
+            self.book_text += TextFromPageParser(
+                self.url + "?page={}".format(page_number)
+            ).text
+
+
+print(GetBookText("/books/idiot").book_text)
